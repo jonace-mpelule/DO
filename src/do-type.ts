@@ -21,15 +21,20 @@ export const ArgumentsSchema = Schema.Union(
   }),
 );
 
+export const CommandsSchema = Schema.Union(
+  Schema.String,
+  Schema.Array(Schema.String),
+);
+
 export const TaskSchema = Schema.Struct({
   description: Schema.optional(Schema.String),
   needs: Schema.optional(Schema.String),
   args: Schema.optional(ArgumentsSchema),
-  run: Schema.String,
+  run: CommandsSchema,
 });
 
 export const EnvSchema = Schema.Struct({
-  file: Schema.String
+  file: Schema.Union(Schema.String, Schema.Array(Schema.String)),
 });
 
 export const DoSchema = Schema.Struct({
@@ -46,4 +51,5 @@ export const DoSchema = Schema.Struct({
 export type Task = Schema.Schema.Type<typeof TaskSchema>;
 export type Argument = Schema.Schema.Type<typeof ArgumentSchema>;
 export type Arguments = Schema.Schema.Type<typeof ArgumentsSchema>;
+export type Commands = Schema.Schema.Type<typeof CommandsSchema>;
 export type DoFile = Schema.Schema.Type<typeof DoSchema>;

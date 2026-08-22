@@ -70,19 +70,26 @@ export const runTarget = (
       });
     }
 
-    const commandTemplate = typeof target === "string" ? target : target.run;
+    const run = typeof target === "string" ? target : target.run;
+    const commandTemplates = typeof run !== "string"
+      ? run
+      : run.includes("\n")
+        ? run.split(/\r?\n/).map((command) => command.trim()).filter(Boolean)
+        : [run];
 
-    const command = yield* interpolateCommand(
-      commandTemplate,
-      targetName,
-      target,
-      env,
-      cliArguments,
-    );
+    for (const commandTemplate of commandTemplates) {
+      const command = yield* interpolateCommand(
+        commandTemplate,
+        targetName,
+        target,
+        env,
+        cliArguments,
+      );
 
-    yield* Effect.sync(() => {
-      console.log(`\n$ ${command}`);
-    });
+      yield* Effect.sync(() => {
+        console.log(`\n$ ${command}`);
+      });
 
-    yield* runCommand(command, env);
+      yield* runCommand(command, env);
+    }
   });

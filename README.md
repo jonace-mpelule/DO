@@ -1,13 +1,13 @@
-# do
+# do-file
 
-`do` is a small YAML task runner for commands you use repeatedly in a project. A
-`DO` file can contain simple commands, documented tasks, task dependencies,
-declared arguments, and variables loaded from a dotenv-style file.
+`do-file` is a small YAML task runner for commands you use repeatedly in a
+project. A `DO` file can contain simple commands, documented tasks, task
+dependencies, declared arguments, and variables loaded from dotenv-style files.
 
 ## Install
 
-`@jonacem/do-file` is the npm package name; `do` is the command it installs.
-Bun is required to run it.
+`@jonacem/do-file` is the npm package name. It installs the official `dof` and
+`do-file` commands. Bun is required to run it.
 
 ```bash
 npm install --global @jonacem/do-file
@@ -22,14 +22,14 @@ bun install --global @jonacem/do-file
 Confirm the command is available:
 
 ```bash
-do --help
+dof --help
 ```
 
 > Until the first npm release is published, run `bun run build` and then
 > `npm install --global .` from the repository root.
 
 Run a task from the directory containing your `DO` file with
-`do <task> [arguments]`.
+`dof <task> [arguments]`. The longer `do-file` command works identically.
 
 ## Development
 
@@ -46,9 +46,8 @@ type-check and tests.
 
 ## Publish to npm
 
-The package is published as `@jonacem/do-file`, but its `bin` mapping installs
-the command as `do`. The npm package name and executable name do not need to
-match.
+The package is published as `@jonacem/do-file`, and its `bin` mapping installs
+both `dof` and `do-file`.
 
 ```bash
 npm login
@@ -58,9 +57,6 @@ npm publish --access public
 The `@jonacem` scope avoids npm's unscoped-name similarity restriction while
 keeping the product name. For later releases, change the version first, for
 example with `npm version patch`, and publish the new version.
-
-If another globally installed package already provides a `do` executable, the
-package names can coexist but their global command aliases will conflict.
 
 ## Quick start
 
@@ -96,8 +92,8 @@ port=3000
 Then run:
 
 ```bash
-do dev --name Ada
-do dev --name="Ada Lovelace" --port=4000
+dof dev --name Ada
+dof dev --name="Ada Lovelace" --port=4000
 ```
 
 The first command uses `port=3000` from `.env.do`. The second command overrides
@@ -125,6 +121,41 @@ tasks:
 `needs` names another task that must finish successfully first. Dependency
 cycles and missing dependencies are reported as errors.
 
+### Multiple commands
+
+Commands written on separate indented lines execute one at a time, in order:
+
+```yaml
+tasks:
+  build:
+    run:
+      mkdir -p bin
+      go build -o ./bin/app ./cmd/app
+```
+
+Standard YAML literal blocks are also supported:
+
+```yaml
+tasks:
+  build:
+    run: |
+      mkdir -p bin
+      go build -o ./bin/app ./cmd/app
+```
+
+Or write each command as a YAML list item:
+
+```yaml
+tasks:
+  build:
+    run:
+      - mkdir -p bin
+      - go build -o ./bin/app ./cmd/app
+```
+
+Each command gets its own shell execution. If one fails, the remaining commands
+in that task do not run.
+
 ## Arguments and variables
 
 Declare required arguments as a list:
@@ -137,7 +168,7 @@ tasks:
 ```
 
 ```bash
-do greet --name Ada
+dof greet --name Ada
 ```
 
 Use a mapping to provide defaults or argument metadata:
@@ -159,8 +190,8 @@ tasks:
 Both CLI forms are accepted:
 
 ```bash
-do serve --token secret
-do serve --token=secret --port=8080
+dof serve --token secret
+dof serve --token=secret --port=8080
 ```
 
 Arguments declared by a task dependency are also accepted when running the
@@ -170,12 +201,12 @@ helps catch typos.
 Variable values use this precedence, from highest to lowest:
 
 1. Inline CLI argument (`--name value` or `--name=value`)
-2. Variable from the configured env file
+2. Variable from the configured env file or files
 3. Default declared under `args`
 
 Every `${name}` placeholder must resolve. Interpolation intentionally does not
 read the runner's global process environment. Only inline arguments, the env
-file selected by `env.file`, and defaults in the `DO` file are interpolation
+files selected by `env.file`, and defaults in the `DO` file are interpolation
 sources.
 
 Values are inserted into the command before it is passed to the shell. Quote
@@ -191,6 +222,16 @@ env:
   file: .env.do
 ```
 
+Load multiple files by using a list. Files are loaded in order, and a value in a
+later file overrides the same key from an earlier file:
+
+```yaml
+env:
+  file:
+    - .env
+    - .env.do
+```
+
 The file accepts `KEY=value`, comments, quoted values, and optional dotenv-style
 `export` prefixes:
 
@@ -202,8 +243,8 @@ export LOG_LEVEL=debug
 ```
 
 Loaded values are available both to `${KEY}` interpolation and to the child
-command's environment. The runner does not automatically load `.env`; name the
-file explicitly in `env.file`.
+command's environment. The runner does not automatically load `.env`; name
+every file explicitly in `env.file`.
 
 ## Complete example
 
@@ -229,6 +270,6 @@ tasks:
 ```
 
 ```bash
-do dev --port 3000
-do deploy --environment production
+dof dev --port 3000
+dof deploy --environment production
 ```

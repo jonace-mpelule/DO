@@ -29,7 +29,7 @@ describe("do CLI", () => {
     expect(exitCode).toBe(0);
     expect(stderr).toBe("");
     expect(stdout).toContain("Usage:");
-    expect(stdout).toContain("do <task>");
+    expect(stdout).toContain("dof <task>");
   });
 
   test("runs dependencies and interpolates CLI and loaded env values", async () => {
@@ -39,15 +39,23 @@ describe("do CLI", () => {
     await writeFile(
       join(directory, "DO"),
       `env:
-  file: .env.do
+  file:
+    - .env
+    - .env.do
 tasks:
-  prepare: printf prepared
+  prepare:
+    run:
+      - printf prepared
+      - printf prepared-list
   dev:
     needs: prepare
     args: [name]
-    run: printf "result=${"${name}"}-${"${MODE}"}"
+    run:
+      printf "result=${"${name}"}-${"${MODE}"}"
+      printf "second-command"
 `,
     );
+    await writeFile(join(directory, ".env"), "MODE=base\n");
     await writeFile(join(directory, ".env.do"), "MODE=local\n");
 
     const process = Bun.spawn(
@@ -68,7 +76,9 @@ tasks:
     expect(exitCode).toBe(0);
     expect(stderr).toBe("");
     expect(stdout).toContain("prepared");
+    expect(stdout).toContain("prepared-list");
     expect(stdout).toContain('printf "result=Ada-local"');
     expect(stdout).toContain("result=Ada-local");
+    expect(stdout).toContain("second-command");
   });
 });

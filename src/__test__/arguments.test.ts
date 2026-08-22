@@ -27,19 +27,20 @@ describe("CLI arguments", () => {
 });
 
 describe("task argument interpolation", () => {
+  const command = "echo ${name} on ${port} (${MODE})";
   const task: Task = {
     args: {
       name: { default: "world" },
       port: { required: true },
     },
-    run: "echo ${name} on ${port} (${MODE})",
+    run: command,
   };
 
   test("uses CLI, then the loaded env file, then declared defaults", async () => {
     expect(
       run(
         interpolateCommand(
-          task.run,
+          command,
           "dev",
           task,
           { name: "from-env", port: "4000", MODE: "local" },
@@ -50,9 +51,10 @@ describe("task argument interpolation", () => {
   });
 
   test("does not fall back to the process environment", async () => {
-    const noArguments: Task = { run: "echo ${HOME}" };
+    const homeCommand = "echo ${HOME}";
+    const noArguments: Task = { run: homeCommand };
     expect(
-      runError(interpolateCommand(noArguments.run, "dev", noArguments, {}, {})),
+      runError(interpolateCommand(homeCommand, "dev", noArguments, {}, {})),
     ).resolves.toMatchObject({
       _tag: "UnresolvedVariableError",
       variable: "HOME",
@@ -61,7 +63,7 @@ describe("task argument interpolation", () => {
 
   test("reports a required value before running the command", async () => {
     expect(
-      runError(interpolateCommand(task.run, "dev", task, {}, {})),
+      runError(interpolateCommand(command, "dev", task, {}, {})),
     ).resolves.toMatchObject({
       _tag: "MissingArgumentError",
       argument: "port",

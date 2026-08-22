@@ -1,10 +1,11 @@
 {
   "name": "@jonacem/do-file",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A small YAML task runner with dependencies, arguments, and env-file interpolation.",
   "type": "module",
   "bin": {
-    "do": "dist/do.js"
+    "dof": "dist/do.js",
+    "do-file": "dist/do.js"
   },
   "files": [
     "dist",

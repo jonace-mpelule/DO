@@ -5,7 +5,7 @@ import { Effect } from "effect";
 import packageJson from "../package.json";
 import { parseCliArguments, validateCliArguments } from "./arguments";
 import { formatError, MissingTargetError } from "./errors";
-import { ParseDoFile, ParseEnvFile } from "./parsers";
+import { ParseDoFile, ParseEnvFiles } from "./parsers";
 import { runTarget } from "./target";
 
 export const Runner = () =>
@@ -19,10 +19,11 @@ export const Runner = () =>
 
     if (targetName === "--help" || targetName === "-h") {
       yield* Effect.sync(() => {
-        console.log(`do ${packageJson.version}
+        console.log(`dof ${packageJson.version}
 
 Usage:
-  do <task> [--argument value | --argument=value]
+  dof <task> [--argument value | --argument=value]
+  do-file <task> [--argument value | --argument=value]
 
 The command reads tasks from a DO file in the current directory.`);
       });
@@ -38,7 +39,7 @@ The command reads tasks from a DO file in the current directory.`);
     const cliArguments = yield* parseCliArguments(argv.slice(3));
     yield* validateCliArguments(doFile, targetName, cliArguments);
 
-    const env = doFile.env ? yield* ParseEnvFile(doFile.env.file) : {};
+    const env = doFile.env ? yield* ParseEnvFiles(doFile.env.file) : {};
 
     yield* runTarget(doFile, targetName, env, cliArguments);
   });

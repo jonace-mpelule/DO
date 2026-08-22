@@ -11,12 +11,43 @@ const readTextFile = (path: string) =>
     catch: (cause) => new FileReadError({ path, cause }),
   });
 
+// YAML folds an indented scalar after `run:` into one space-separated string.
+// Treat that convenient DO-file syntax as a literal block so each source line
+// remains an individual command. Standard `run: |` and YAML lists are left as-is.
+const preserveImplicitRunLines = (text: string) => {
+  const lines = text.split(/\r?\n/);
+
+  for (let index = 0; index < lines.length; index++) {
+    const line = lines[index]!;
+    const match = /^(\s*)run:\s*(#.*)?$/.exec(line);
+
+    if (!match) {
+      continue;
+    }
+
+    const indentation = match[1]!.length;
+    const next = lines
+      .slice(index + 1)
+      .find((candidate) => candidate.trim() && !candidate.trimStart().startsWith("#"));
+
+    if (
+      next &&
+      next.length - next.trimStart().length > indentation &&
+      !next.trimStart().startsWith("-")
+    ) {
+      lines[index] = `${match[1]}run: |${match[2] ? ` ${match[2]}` : ""}`;
+    }
+  }
+
+  return lines.join("\n");
+};
+
 export const ParseDoFile = (path: string) =>
   Effect.gen(function* () {
     const text = yield* readTextFile(path);
 
     const yaml = yield* Effect.try({
-      try: () => YAML.parse(text),
+      try: () => YAML.parse(preserveImplicitRunLines(text)),
       catch: (cause) => new YamlParseError({path, cause}),
     });
 
@@ -126,3 +157,15 @@ export const ParseEnvFile = (path: string) =>
 
     return env
   })
+
+export const ParseEnvFiles = (paths: string | ReadonlyArray<string>) =>
+  Effect.gen(function* () {
+    const files = typeof paths === "string" ? [paths] : paths;
+    const env: Record<string, string> = {};
+
+    for (const path of files) {
+      Object.assign(env, yield* ParseEnvFile(path));
+    }
+
+    return env;
+  });
