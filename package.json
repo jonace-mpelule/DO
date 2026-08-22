@@ -1,5 +1,5 @@
 {
-  "name": "do-file",
+  "name": "@jonacem/do-file",
   "version": "0.1.0",
   "description": "A small YAML task runner with dependencies, arguments, and env-file interpolation.",
   "type": "module",

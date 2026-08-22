@@ -6,17 +6,17 @@ declared arguments, and variables loaded from a dotenv-style file.
 
 ## Install
 
-`do-file` is the npm package name; `do` is the command it installs. Bun is
-required to run it.
+`@jonacem/do-file` is the npm package name; `do` is the command it installs.
+Bun is required to run it.
 
 ```bash
-npm install --global do-file
+npm install --global @jonacem/do-file
 ```
 
 You can also install it globally with Bun:
 
 ```bash
-bun install --global do-file
+bun install --global @jonacem/do-file
 ```
 
 Confirm the command is available:
@@ -46,16 +46,17 @@ type-check and tests.
 
 ## Publish to npm
 
-The package is published as `do-file`, but its `bin` mapping installs the command
-as `do`. The npm package name and executable name do not need to match.
+The package is published as `@jonacem/do-file`, but its `bin` mapping installs
+the command as `do`. The npm package name and executable name do not need to
+match.
 
 ```bash
 npm login
-npm publish
+npm publish --access public
 ```
 
-Package names are first-come, first-served. Verify `do-file` again immediately
-before the first publish. For later releases, change the version first, for
+The `@jonacem` scope avoids npm's unscoped-name similarity restriction while
+keeping the product name. For later releases, change the version first, for
 example with `npm version patch`, and publish the new version.
 
 If another globally installed package already provides a `do` executable, the
