@@ -16,7 +16,7 @@ afterEach(async () => {
 describe("do CLI", () => {
   test("prints help without requiring a DO file", async () => {
     const process = Bun.spawn(
-      ["bun", resolve(import.meta.dir, "index.ts"), "--help"],
+      ["bun", resolve(import.meta.dir, "..", "index.ts"), "--help"],
       { stdout: "pipe", stderr: "pipe" },
     );
 
@@ -51,7 +51,7 @@ tasks:
     await writeFile(join(directory, ".env.do"), "MODE=local\n");
 
     const process = Bun.spawn(
-      ["bun", resolve(import.meta.dir, "index.ts"), "dev", "--name", "Ada"],
+      ["bun", resolve(import.meta.dir, "..", "index.ts"), "dev", "--name", "Ada"],
       {
         cwd: directory,
         stdout: "pipe",

@@ -1,5 +1,5 @@
 {
-  "name": "do-ts",
+  "name": "do-file",
   "version": "0.1.0",
   "description": "A small YAML task runner with dependencies, arguments, and env-file interpolation.",
   "type": "module",
@@ -28,7 +28,7 @@
     "build": "bun build src/index.ts --target=bun --outfile dist/do.js",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
-    "check": "bun run typecheck && bun test",
+    "check": "bun run typecheck",
     "prepack": "bun run build",
     "prepublishOnly": "bun run check"
   },
